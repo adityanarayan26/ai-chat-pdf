@@ -111,6 +111,8 @@ const page = () => {
                 });
 
                 const data = response.data;
+                
+                
                 if (data.fileId) {
                     setFileId(data.fileId);
                     setFilePath(data.filePath);

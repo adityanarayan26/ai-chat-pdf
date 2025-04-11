@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import { nanoid } from 'nanoid';
+import pdfParse from 'pdf-parse';
 
 
 
@@ -25,8 +26,11 @@ export async function POST(req) {
 
     const filePath = path.join("/tmp", renamedFilename);
     await writeFile(filePath, buffer);
-
-    return NextResponse.json({ fileId: renamedFilename, filePath });
+    
+    const pdfData = await pdfParse(buffer);
+    const extractedText = pdfData.text;
+    
+    return NextResponse.json({ fileId: renamedFilename, filePath, extractedText });
   } catch (error) {
     console.error("File upload error:", error);
     return NextResponse.json(
