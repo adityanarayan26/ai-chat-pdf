@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import Header from './_components/Header'
 import { renderCanvas } from "@/components/ui/canvas";
 
-const page = () => {
+const Page = () => {
   useEffect(() => {
     renderCanvas();
   }, []);
@@ -20,4 +20,4 @@ const page = () => {
   )
 }
 
-export default page
+export default Page
