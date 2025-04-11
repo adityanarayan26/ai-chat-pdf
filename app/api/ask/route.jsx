@@ -18,8 +18,7 @@ export async function POST(req) {
       );
     }
 
-    const filePath = path.join(process.cwd(), 'tmp', fileId);
-
+    const filePath = path.join('/tmp', fileId);
     const loader = new PDFLoader(filePath);
     const docs = await loader.load();
 
