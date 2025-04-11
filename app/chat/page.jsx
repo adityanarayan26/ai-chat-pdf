@@ -26,6 +26,7 @@ const page = () => {
             content: "Hey there! I am your AI assistant. You can ask me anything about your PDF.",
         }
     ]);
+    const [extractedText, setExtractedText] = useState('');
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -50,6 +51,7 @@ const page = () => {
                 fileId,
                 filePath,
                 userPrompt: InputValue,
+                extractedText, // Include the extracted text in the request
             });
 
             let answer = askRes.data.answer;
@@ -112,6 +114,7 @@ const page = () => {
                 if (data.fileId) {
                     setFileId(data.fileId);
                     setFilePath(data.filePath);
+                    setExtractedText(data.extractedText);
                     setChatHistory((prev) => [...prev, {
                         role: "user",
                         content: `📄 PDF "${selectedFile.name}" .`,
