@@ -4,8 +4,6 @@ import path from 'path';
 import { nanoid } from 'nanoid';
 import pdfParse from 'pdf-parse';
 
-
-
 export async function POST(req) {
   try {
     const formData = await req.formData();
