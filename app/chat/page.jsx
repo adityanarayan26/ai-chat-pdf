@@ -2,8 +2,10 @@
 import { Button } from '@/components/ui/button';
 import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage } from '@/components/ui/chat-bubble';
 import { ChatInput, ChatInputSubmit, ChatInputTextArea } from '@/components/ui/chat-input'
+import { Particles } from '@/components/ui/particles';
 import { ShootingStars } from '@/components/ui/shooting-stars';
 import { TextShimmer } from '@/components/ui/text-shimmer';
+import { CustomCursorButton } from '@/components/ui/wood-cursor';
 import axios from 'axios';
 import { File } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react'
@@ -116,11 +118,57 @@ const page = () => {
     return (
                 
         <div className='h-screen w-full flex justify-center pt-20 bg-zinc-950 relative'>
-               <ShootingStars starColor="#FF4C4C" trailColor="#FFAAAA" minSpeed={10} maxSpeed={20} minDelay={1000} maxDelay={3000} />
-               <ShootingStars starColor="#00FF00" trailColor="#B6FFB6" minSpeed={15} maxSpeed={35} minDelay={1200} maxDelay={3200} />
-               <ShootingStars starColor="#0000FF" trailColor="#B6B6FF" minSpeed={20} maxSpeed={30} minDelay={1400} maxDelay={3400} />
-               <ShootingStars starColor="#FFD700" trailColor="#FFFACD" minSpeed={18} maxSpeed={28} minDelay={1100} maxDelay={3100} />
-               <ShootingStars starColor="#FF00FF" trailColor="#FFB6FF" minSpeed={22} maxSpeed={12} minDelay={1600} maxDelay={3600} />
+               <ShootingStars
+                       starColor="#ffffff"
+                       trailColor="#ffffff"
+                       minSpeed={6}
+                       maxSpeed={10}
+                       minDelay={1000}
+                       maxDelay={3000}
+                     />
+               <ShootingStars
+                       starColor="#ffffff"
+                       trailColor="#ffffff"
+                       minSpeed={6}
+                       maxSpeed={10}
+                       minDelay={1000}
+                       maxDelay={3000}
+                     />
+               
+               <ShootingStars
+                       starColor="#ffffff"
+                       trailColor="#ffffff"
+                       minSpeed={6}
+                       maxSpeed={10}
+                       minDelay={1000}
+                       maxDelay={3000}
+                     />
+               
+               <ShootingStars
+                       starColor="#ffffff"
+                       trailColor="#ffffff"
+                       minSpeed={6}
+                       maxSpeed={10}
+                       minDelay={1000}
+                       maxDelay={3000}
+                     />
+               <ShootingStars
+                       starColor="#ffffff"
+                       trailColor="#ffffff"
+                       minSpeed={6}
+                       maxSpeed={10}
+                       minDelay={1000}
+                       maxDelay={3000}
+                     />
+               
+               <Particles
+        className="absolute inset-0"
+        quantity={150}
+        ease={50}
+        color='#ffffff'
+        refresh
+      />
+        <CustomCursorButton className='hidden'/>
   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15)_0%,rgba(0,0,0,0)_80%), bg-[url('/stars-bg.png')] bg-cover bg-repeat" />
             <div ref={chatContainerRef} className='w-[80%] h-[calc(100vh-200px)] overflow-y-auto pr-2'>
                 {chatHistory.map((msg, index) => (
@@ -147,13 +195,13 @@ const page = () => {
                         className="w-full flex items-center bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2"
                     >
                         <textarea
-                            className="flex-grow bg-transparent text-white resize-none outline-none h-10 max-h-40 overflow-y-auto"
+                            className="flex-grow cursor-default bg-transparent text-white resize-none outline-none h-10 max-h-40 overflow-y-auto"
                             placeholder="Type a message..."
                             value={InputValue}
                             onChange={(e) => setInputValue(e.target.value)}
                             rows={1}
                         />
-                        <button className='text-white cursor-pointer' onClick={()=>pdf.current.click()}>
+                        <button className='text-white cursor-none' onClick={()=>pdf.current.click()}>
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
   <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
 </svg>
