@@ -22,7 +22,7 @@ const page = () => {
     const [chatHistory, setChatHistory] = useState([
         {
             role: "ai",
-            content: "Hey there! I am your AI assistant. You can ask me anything about the library.",
+            content: "Hey there! I am your AI assistant. You can ask me anything about your PDF.",
         }
     ]);
 
