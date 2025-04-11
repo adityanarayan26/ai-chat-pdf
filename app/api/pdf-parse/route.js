@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import path from 'path';
 import { nanoid } from 'nanoid';
 
-export const runtime = "nodejs";
+
 
 export async function POST(req) {
   try {
@@ -23,8 +23,7 @@ export async function POST(req) {
       .slice(0, -1)
       .join(".")}_${fileId}.${filename.split(".").pop()}`;
 
-    const filePath = path.join(process.cwd(), "docs/pdfFiles/", renamedFilename);
-    await mkdir(path.join(process.cwd(), "docs/pdfFiles"), { recursive: true });
+    const filePath = path.join("/tmp", renamedFilename);
     await writeFile(filePath, buffer);
 
     return NextResponse.json({ fileId: renamedFilename });
@@ -36,3 +35,6 @@ export async function POST(req) {
     );
   }
 }
+export const config = {
+  runtime: 'nodejs', // not 'edge'
+};
