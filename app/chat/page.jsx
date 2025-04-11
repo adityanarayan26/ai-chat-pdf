@@ -1,0 +1,188 @@
+'use client'
+import { Button } from '@/components/ui/button';
+import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage } from '@/components/ui/chat-bubble';
+import { ChatInput, ChatInputSubmit, ChatInputTextArea } from '@/components/ui/chat-input'
+import { ShootingStars } from '@/components/ui/shooting-stars';
+import { TextShimmer } from '@/components/ui/text-shimmer';
+import axios from 'axios';
+import { File } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react'
+
+const page = () => {
+    const pdf = useRef(null)
+    const chatContainerRef = useRef(null);
+    const [InputValue, setInputValue] = useState('')
+    const [isLoading, setIsLoading] = useState(false);
+    const [file, setFile] = useState(null);
+    const [fileId, setFileId] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
+    const [chatHistory, setChatHistory] = useState([
+        {
+            role: "ai",
+            content: "Hey there! I am your AI assistant. You can ask me anything about the library.",
+        }
+    ]);
+
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [chatHistory]);
+
+    const handleSubmit = async () => {
+        if (!fileId || isUploading) {
+            alert("Please wait until the PDF is uploaded.");
+            return;
+        }
+
+        try {
+            // Append user message to chat
+            setChatHistory((prev) => [...prev, { role: "user", content: InputValue }]);
+
+            // Ask question
+            const askRes = await axios.post("/api/ask", {
+                fileId,
+                userPrompt: InputValue,
+            });
+
+            let answer = askRes.data.answer;
+
+            try {
+                if (typeof answer === 'string') {
+                    try {
+                        const parsed = JSON.parse(answer);
+
+                        // If it's the Gemini format
+                        if (Array.isArray(parsed?.candidates) && parsed.candidates[0]?.content?.parts?.[0]?.text) {
+                            const inner = parsed.candidates[0].content.parts[0].text;
+                            try {
+                                const innerParsed = JSON.parse(inner);
+                                answer = innerParsed.answer || innerParsed.response || innerParsed.skills?.join(", ") || JSON.stringify(innerParsed, null, 2);
+                            } catch (e) {
+                                answer = inner;
+                            }
+                        } else {
+                            answer = parsed.answer || parsed.response || parsed.parts?.[0]?.text || JSON.stringify(parsed, null, 2);
+                        }
+                    } catch (err) {
+                        console.error("Error parsing answer:", err);
+                    }
+                } else if (typeof answer === 'object') {
+                    answer = answer.answer || answer.response || answer.parts?.[0]?.text || JSON.stringify(answer, null, 2);
+                }
+            } catch (err) {
+                console.error("Error parsing answer:", err);
+            }
+
+            // Append AI response to chat
+            setChatHistory((prev) => [...prev, { role: "ai", content: answer }]);
+
+            setInputValue(""); // Clear input if needed
+        } catch (error) {
+            console.error("Error during AI interaction:", error);
+        }
+    };
+
+    const handleFileChange = async (e) => {
+        if (e.target.files) {
+            const selectedFile = e.target.files[0];
+            setFile(selectedFile);
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            setIsUploading(true);
+            try {
+                const response = await axios.post("/api/pdf-parse", formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                });
+
+                const data = response.data;
+                if (data.fileId) {
+                    setFileId(data.fileId);
+                } else {
+                    console.error("File upload failed:", data.error);
+                }
+                setIsUploading(false);
+            } catch (error) {
+                console.error("Error uploading PDF:", error);
+                setIsUploading(false);
+            }
+        }
+    };
+
+    return (
+                
+        <div className='h-screen w-full flex justify-center pt-20 bg-zinc-950 relative'>
+               <ShootingStars starColor="#FF4C4C" trailColor="#FFAAAA" minSpeed={10} maxSpeed={20} minDelay={1000} maxDelay={3000} />
+               <ShootingStars starColor="#00FF00" trailColor="#B6FFB6" minSpeed={15} maxSpeed={35} minDelay={1200} maxDelay={3200} />
+               <ShootingStars starColor="#0000FF" trailColor="#B6B6FF" minSpeed={20} maxSpeed={30} minDelay={1400} maxDelay={3400} />
+               <ShootingStars starColor="#FFD700" trailColor="#FFFACD" minSpeed={18} maxSpeed={28} minDelay={1100} maxDelay={3100} />
+               <ShootingStars starColor="#FF00FF" trailColor="#FFB6FF" minSpeed={22} maxSpeed={12} minDelay={1600} maxDelay={3600} />
+  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.15)_0%,rgba(0,0,0,0)_80%), bg-[url('/stars-bg.png')] bg-cover bg-repeat" />
+            <div ref={chatContainerRef} className='w-[80%] h-[calc(100vh-200px)] overflow-y-auto pr-2'>
+                {chatHistory.map((msg, index) => (
+                 
+             
+                  <ChatBubble key={index} variant={msg.role === "user" ? "sent" : "received"}>
+                        <ChatBubbleAvatar fallback={msg.role === "user" ? "ME" : "AI"} />
+                        <ChatBubbleMessage variant={msg.role === "user" ? "sent" : "received"}>
+                            {typeof msg.content === 'string' ? msg.content.replace(/^"(.*)"$/, '$1') : JSON.stringify(msg.content)}
+                        </ChatBubbleMessage>
+                    </ChatBubble>
+                  
+                ))}
+            </div>
+
+            <div className='absolute bottom-5 left-[50%] translate-x-[-50%]'>
+               
+                <div className='flex flex-col  items-start justify-center'>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            handleSubmit();
+                        }}
+                        className="w-full flex items-center bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2"
+                    >
+                        <textarea
+                            className="flex-grow bg-transparent text-white resize-none outline-none h-10 max-h-40 overflow-y-auto"
+                            placeholder="Type a message..."
+                            value={InputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            rows={1}
+                        />
+                        <button className='text-white cursor-pointer' onClick={()=>pdf.current.click()}>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5">
+  <path strokeLinecap="round" strokeLinejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
+</svg>
+<input type="file" name="" accept='application/pdf' className='hidden' ref={pdf} id="" onChange={handleFileChange} />
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={!fileId || isUploading}
+                            className={`ml-2 p-2 ${
+                              !fileId || isUploading ? "text-gray-600 cursor-not-allowed" : "text-gray-400 hover:text-white"
+                            } transition-colors`}
+                            aria-label="Send message"
+                        >
+                            <svg
+                                width="20"
+                                height="20"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path d="M2.01 21L23 12 2.01 3v7l15 2-15 2z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+    )
+}
+
+export default page
