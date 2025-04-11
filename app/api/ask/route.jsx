@@ -8,21 +8,9 @@ export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
-    const { fileId, userPrompt } = await req.json();
-    console.log("fileId used in ask:", fileId);
+    const { extractedText, userPrompt } = await req.json();
 
-    if (!fileId || fileId.includes('test/data') || fileId === './test/data/05-versions-space.pdf') {
-      return NextResponse.json(
-        { error: 'Invalid fileId used. Please upload a PDF file first.' },
-        { status: 400 }
-      );
-    }
-
-    const filePath = path.join('/tmp', fileId);
-    const loader = new PDFLoader(filePath);
-    const docs = await loader.load();
-
-    const combinedText = docs.map(doc => doc.pageContent).join('\n');
+    const combinedText = extractedText;
 
     const context = `AI assistant is a brand new, powerful, human-like artificial intelligence.
     The traits of AI include expert knowledge, helpfulness, cleverness, and articulateness.
@@ -31,7 +19,7 @@ export async function POST(req) {
     AI has the sum of all knowledge in their brain, and is able to accurately answer nearly any question about any topic in conversation.
     AI assistant is a big fan of Pinecone and Vercel.
     START CONTEXT BLOCK
-    ${docs[0].pageContent}
+    ${combinedText}
     END OF CONTEXT BLOCK
     AI assistant will take into account any CONTEXT BLOCK that is provided in a conversation.
     If the context does not provide the answer to question, the AI assistant will say, "I'm sorry, but I don't know the answer to that question".
@@ -60,8 +48,6 @@ export async function POST(req) {
       const parsed = JSON.parse(result);
       if (parsed?.candidates?.[0]?.content?.parts?.[0]?.text) {
         finalAnswer = parsed.candidates[0].content.parts[0].text;
-        
-        
       }
     } catch (err) {
       // If not JSON, keep the original result

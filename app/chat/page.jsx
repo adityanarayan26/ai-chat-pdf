@@ -17,6 +17,7 @@ const page = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [file, setFile] = useState(null);
     const [fileId, setFileId] = useState(null);
+    const [filePath, setFilePath] = useState(null); // for hosted app
     const [isUploading, setIsUploading] = useState(false);
     const [pdfLoading, setPdfLoading] = useState(false);
     const [chatHistory, setChatHistory] = useState([
@@ -47,6 +48,7 @@ const page = () => {
             // Ask question
             const askRes = await axios.post("/api/ask", {
                 fileId,
+                filePath,
                 userPrompt: InputValue,
             });
 
@@ -109,6 +111,7 @@ const page = () => {
                 const data = response.data;
                 if (data.fileId) {
                     setFileId(data.fileId);
+                    setFilePath(data.filePath);
                     setChatHistory((prev) => [...prev, {
                         role: "user",
                         content: `📄 PDF "${selectedFile.name}" .`,

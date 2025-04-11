@@ -26,7 +26,7 @@ export async function POST(req) {
     const filePath = path.join("/tmp", renamedFilename);
     await writeFile(filePath, buffer);
 
-    return NextResponse.json({ fileId: renamedFilename });
+    return NextResponse.json({ fileId: renamedFilename, filePath });
   } catch (error) {
     console.error("File upload error:", error);
     return NextResponse.json(
