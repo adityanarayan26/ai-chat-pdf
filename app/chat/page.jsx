@@ -7,8 +7,8 @@ import { ShootingStars } from '@/components/ui/shooting-stars';
 import { TextShimmer } from '@/components/ui/text-shimmer';
 import { CustomCursorButton } from '@/components/ui/wood-cursor';
 import axios from 'axios';
-import { File } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react'
+import { toast } from 'sonner';
 
 const page = () => {
     const pdf = useRef(null)
@@ -18,6 +18,7 @@ const page = () => {
     const [file, setFile] = useState(null);
     const [fileId, setFileId] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [pdfLoading, setPdfLoading] = useState(false);
     const [chatHistory, setChatHistory] = useState([
         {
             role: "ai",
@@ -32,14 +33,16 @@ const page = () => {
     }, [chatHistory]);
 
     const handleSubmit = async () => {
-        if (!fileId || isUploading) {
-            alert("Please wait until the PDF is uploaded.");
+        if (!InputValue.trim()) return; // Prevent sending empty messages
+        if (!fileId) {
+            toast.error("Please upload a PDF file first.");
             return;
         }
 
         try {
             // Append user message to chat
             setChatHistory((prev) => [...prev, { role: "user", content: InputValue }]);
+            setIsLoading(true);
 
             // Ask question
             const askRes = await axios.post("/api/ask", {
@@ -78,6 +81,7 @@ const page = () => {
 
             // Append AI response to chat
             setChatHistory((prev) => [...prev, { role: "ai", content: answer }]);
+            setIsLoading(false);
 
             setInputValue(""); // Clear input if needed
         } catch (error) {
@@ -93,6 +97,7 @@ const page = () => {
             const formData = new FormData();
             formData.append("file", selectedFile);
 
+            setPdfLoading(true);
             setIsUploading(true);
             try {
                 const response = await axios.post("/api/pdf-parse", formData, {
@@ -104,6 +109,11 @@ const page = () => {
                 const data = response.data;
                 if (data.fileId) {
                     setFileId(data.fileId);
+                    setChatHistory((prev) => [...prev, {
+                        role: "user",
+                        content: `📄 PDF "${selectedFile.name}" .`,
+                    }]);
+                    console.log("Uploaded File ID:", data.fileId);
                 } else {
                     console.error("File upload failed:", data.error);
                 }
@@ -112,12 +122,23 @@ const page = () => {
                 console.error("Error uploading PDF:", error);
                 setIsUploading(false);
             }
+            setPdfLoading(false);
         }
     };
 
     return (
-                
-        <div className='h-screen w-full flex justify-center pt-20 bg-zinc-950 relative'>
+<div>
+            {pdfLoading && (
+                <div className="absolute top-10 left-[50%] translate-x-[-50%] bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+            <TextShimmer>  Uploading and parsing PDF...</TextShimmer>
+                </div>
+            )}
+            {isLoading && (
+                <div className="absolute top-20 left-[50%] translate-x-[-50%] bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+                  <TextShimmer>Generating answer...</TextShimmer>
+                </div>
+            )}
+            <div className='h-screen w-full flex justify-center pt-20 bg-zinc-950 relative'>
                <ShootingStars
                        starColor="#ffffff"
                        trailColor="#ffffff"
@@ -192,13 +213,19 @@ const page = () => {
                             e.preventDefault();
                             handleSubmit();
                         }}
-                        className="w-full flex items-center bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2"
+                        className="w-full flex items-center  bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2"
                     >
                         <textarea
                             className="flex-grow cursor-default bg-transparent text-white resize-none outline-none h-10 max-h-40 overflow-y-auto"
                             placeholder="Type a message..."
                             value={InputValue}
                             onChange={(e) => setInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleSubmit();
+                                }
+                            }}
                             rows={1}
                         />
                         <button className='text-white cursor-none' onClick={()=>pdf.current.click()}>
@@ -229,7 +256,7 @@ const page = () => {
                 </div>
             </div>
         </div>
-        
+        </div>
     )
 }
 
