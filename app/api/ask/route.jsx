@@ -10,6 +10,10 @@ export async function POST(req) {
   try {
     const { extractedText, userPrompt } = await req.json();
 
+    if (!extractedText || !userPrompt) {
+      return NextResponse.json({ error: "Missing input data" }, { status: 400 });
+    }
+
     const combinedText = extractedText;
 
     const context = `AI assistant is a brand new, powerful, human-like artificial intelligence.
@@ -26,34 +30,30 @@ export async function POST(req) {
     AI assistant will not apologize for previous responses, but instead will indicated new information was gained.
     AI assistant will not invent anything that is not drawn directly from the context.`;
 
+    // Replace console.log with remote-logging compatible code or remove in production
+    // console.log("Sending to AI:", `${context}\n\nBased on that, answer this: ${userPrompt}`);
+
     const result = await sendMessage(
       `${context}\n\nBased on that, answer this: ${userPrompt}`
     );
 
     let finalAnswer = result;
 
-    // Try to parse if the result is JSON string (from Gemini or similar)
     try {
-      if (finalAnswer) {
-        console.log(finalAnswer);
-        try {
-          const parsed = JSON.parse(finalAnswer);
-          // If you expect one key-value pair only
-          const firstKey = Object.keys(parsed)[0];
-          finalAnswer = parsed[firstKey];
-        } catch (e) {
-          // Not a JSON object, keep original
-        }
-      }
-      const parsed = JSON.parse(result);
+      const parsed = typeof result === 'string' ? JSON.parse(result) : result;
+
       if (parsed?.candidates?.[0]?.content?.parts?.[0]?.text) {
         finalAnswer = parsed.candidates[0].content.parts[0].text;
+      } else if (parsed?.answer) {
+        finalAnswer = parsed.answer;
+      } else if (typeof parsed === 'object') {
+        finalAnswer = Object.values(parsed)[0] || result;
       }
     } catch (err) {
-      // If not JSON, keep the original result
+      // Not a JSON, use original result
     }
 
-    return NextResponse.json({ answer: finalAnswer });
+    return NextResponse.json({ answer: finalAnswer || "I'm sorry, I couldn't generate a response." });
   } catch (error) {
     console.error('Error processing ask request:', error);
     return NextResponse.json(
